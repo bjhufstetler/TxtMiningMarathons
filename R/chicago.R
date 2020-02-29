@@ -8,6 +8,21 @@ marathonList <- tibble::tibble(type = base::rep(c("us", "international"), each =
                                                                   "rundisney.com/events/disneyworld/disneyworld-marathon-weekend/events/marathon", "lamarathon.com", "runrocknroll.com/Events/San-Diego", "tcmevents.org/events/medtronic-twin-cities-marathon-weekend-2020/race/marathon", "portlandmarathon.com",
                                                                   "virginmoneylondonmarathon.com/en-gb", "bmw-berlin-marathon.com/en", "marathon.tokyo/en", "schneiderelectricparismarathon.com/en", "dubaimarathon.org",
                                                                   "tcsamsterdammarathon.nl/en", "torontowaterfrontmarathon.com", "frankfurt-marathon.com/en", "nnmarathonrotterdam.org", "runromethemarathon.com/en/home-en")))
+# This thing takes a while to run, let's give ourselves 
+# a pretty way to see it's progress
+Monitor <- function(year, sex, pageNumber, pageCount)
+{ 
+  sumryStat <- c(year, sex, pageNumber, pageCount)
+  sumryStat <- base::format(sumryStat, digits = 0)
+  base::cat(paste("Stats | Year = ", sumryStat[1], 
+                  "| Sex =", sumryStat[2],
+                  "| Page =", sumryStat[3],
+                  " of ", sumryStat[4]))
+  base::cat("\n")
+  utils::flush.console()
+}
+
+
 # if you don't have pacman, run install.packages("pacman")
 # pacman stands for Package Manager and lets you load libraries if they
 # exist and if you haven't installed them yet, it installs them then loads them
@@ -88,9 +103,24 @@ for(year in 1996:2019){
       
       # Combine the info from this specific page with the data from the other pages
       chicagoData %<>% base::rbind(pageClean)
+      Monitor(year, sex, pageNumber, pageCount)
     }
   }
 }
+# Clean up this mess we've made
+rm(countryCol, 
+   pageClean, 
+   pageMatrix, 
+   chicagoPageURL, 
+   page, 
+   pageCount, 
+   pageData, 
+   pageNumber, 
+   raceCol, 
+   sex, 
+   sexCol, 
+   year, 
+   yearCol)
 
 # This took a really long time to run, best to save the data to our local machine for recall later
 save(chicagoData, file = "chicagoData.RData")
