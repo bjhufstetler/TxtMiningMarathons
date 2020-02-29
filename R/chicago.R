@@ -144,16 +144,22 @@ dataTibble <- tibble::tibble(year = base::unlist(chicagoData[-1,colnames(chicago
 # Lets get some of the summary stats, how many people of each gender participated each year
 # Then plot it
 dataTibble %>%
+  # Analyze the data in year groups
   dplyr::group_by(year) %>%
+  # Count the number of people of each sex were present in each year group
   dplyr::count(sex) %>%
+  # Plot the data in a count vs year line graph, with each sex broken out
   ggplot2::ggplot(ggplot2::aes(x = year,
                                y = n,
                                color = sex)) +
   ggplot2::geom_line() +
+  # Add a line at the date of the 2013 Boston Marathon
   ggplot2::geom_vline(xintercept = 2013.33, 
                       color = "red", 
                       linetype = "dashed") +
+  # Clean up the x axis to make it more readable
   ggplot2::scale_x_continuous(breaks=c(2008:2019)) +
+  # Rotate the x axis labels
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
 
