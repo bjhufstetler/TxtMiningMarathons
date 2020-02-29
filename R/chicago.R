@@ -41,20 +41,25 @@ pacman::p_load(magrittr)
 chicagoData <- base::matrix(ncol = 11)
 
 # The chicago data is presented as a searchable list, the following url segments 
-# allow us to input search parameters YEAR, PAGE, and SEX
-chicagoPageURL <- c("https://results.chicagomarathon.com/","/?page=", "&event=MAR&lang=EN_CAP&num_results=1000&pid=list&search%5Bsex%5D=")
+# allow us to input search parameters YEAR, PAGE, and SEX (note that the data is stored differently in 2019 than the others)
+chicagoPageURL <- c("https://results.chicagomarathon.com/2019/?pid=list&num_results=1000&lang=EN_CAP",
+                    "https://chicago-history.r.mikatiming.com/2018/?pid=list&num_results=1000&lang=EN_CAP&event_main_group=",
+                    "&page=",
+                    "&search%5Bsex%5D=")
 
 # Chicago Marathon has data from 1996-2019 we can index over all of these years
 for(year in 2008:2019){
   # Sex isn't an extractable element from any of the data presentation methods so we have
   # to do a search on it and then we'll apply the search index as a sex column later
-  for(sex in c("M","F")){
+  yearURL <- base::ifelse(year == 2019, 
+                          chicagoPageURL[1], 
+                          base::paste0(chicagoPageURL[2], as.character(year)))
+  for(sex in c("M","W")){
     # Open the first page in the search category and find the total number of pages
-    page <- base::paste0(chicagoPageURL[1],
-                         as.character(year),
-                         chicagoPageURL[2],
+    page <- base::paste0(yearURL,
+                         chicagoPageURL[3],
                          "1",
-                         chicagoPageURL[3], 
+                         chicagoPageURL[4], 
                          sex)
     
     pageCount <- page %>%
@@ -71,11 +76,10 @@ for(year in 2008:2019){
     # Index through each page number for that year/sex combination
     for(pageNumber in base::seq_len(pageCount)){
       # Create the search url
-      page <- base::paste0(chicagoPageURL[1],
-                           as.character(year),
-                           chicagoPageURL[2],
-                           as.character(pageNumber),
+      page <- base::paste0(yearURL,
                            chicagoPageURL[3],
+                           as.character(pageNumber),
+                           chicagoPageURL[4],
                            sex)
       # Get all the text from each row (inspecting the page shows that each element uses a class = list-field XXX)
       pageData <- xml2::read_html(page) %>%
@@ -124,27 +128,33 @@ rm(countryCol,
    sex, 
    sexCol, 
    year, 
-   yearCol)
+   yearCol,
+   yearURL,
+   monitor)
 
 # This took a really long time to run, best to save the data to our local machine for recall later
-save(chicagoData, file = "chicagoData.RData")
+base::save(chicagoData, file = base::file.path("R", "data", "chicagoData.RData"))
 
 ###############################################################################################
 # Ok, now that we have the data, let's do something with it
 # First things first, let's convert the data into a tibble so we can use some tidyverse functions
-dataTibble <- tibble::tibble(chicagoData)
+dataTibble <- tibble::tibble(year = base::unlist(chicagoData[-1,colnames(chicagoData)=="year"]),
+                             sex = base::unlist(chicagoData[-1,colnames(chicagoData)=="sex"]))
 
 # Lets get some of the summary stats, how many people of each gender participated each year
-dataTibble %>% group_by("name", "yearcol")
-
-
-
-
-
-
-
-
-
+# Then plot it
+dataTibble %>%
+  dplyr::group_by(year) %>%
+  dplyr::count(sex) %>%
+  ggplot2::ggplot(ggplot2::aes(x = year,
+                               y = n,
+                               color = sex)) +
+  ggplot2::geom_line() +
+  ggplot2::geom_vline(xintercept = 2013.33, 
+                      color = "red", 
+                      linetype = "dashed") +
+  ggplot2::scale_x_continuous(breaks=c(2008:2019)) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 
 
   
