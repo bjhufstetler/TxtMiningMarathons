@@ -14,7 +14,7 @@ Monitor <- function(year, sex, pageNumber, pageCount)
 { 
   sumryStat <- c(year, sex, pageNumber, pageCount)
   sumryStat <- base::format(sumryStat, digits = 0)
-  base::cat(paste("Stats | Year = ", sumryStat[1], 
+  base::cat(paste("Progress | Year = ", sumryStat[1], 
                   "| Sex =", sumryStat[2],
                   "| Page =", sumryStat[3],
                   " of ", sumryStat[4]))
@@ -45,7 +45,7 @@ chicagoData <- base::matrix(ncol = 11)
 chicagoPageURL <- c("https://results.chicagomarathon.com/","/?page=", "&event=MAR&lang=EN_CAP&num_results=1000&pid=list&search%5Bsex%5D=")
 
 # Chicago Marathon has data from 1996-2019 we can index over all of these years
-for(year in 1996:2019){
+for(year in 2008:2019){
   # Sex isn't an extractable element from any of the data presentation methods so we have
   # to do a search on it and then we'll apply the search index as a sex column later
   for(sex in c("M","F")){
@@ -107,6 +107,10 @@ for(year in 1996:2019){
     }
   }
 }
+
+# Oops, accidentally put col in the name yearcol, not too late, let's replace it
+base::colnames(chicagoData) <- c("name", "year",pageData[c(1:2,4:7)], "sex", "race","country")
+
 # Clean up this mess we've made
 rm(countryCol, 
    pageClean, 
@@ -124,4 +128,23 @@ rm(countryCol,
 
 # This took a really long time to run, best to save the data to our local machine for recall later
 save(chicagoData, file = "chicagoData.RData")
+
+###############################################################################################
+# Ok, now that we have the data, let's do something with it
+# First things first, let's convert the data into a tibble so we can use some tidyverse functions
+dataTibble <- tibble::tibble(chicagoData)
+
+# Lets get some of the summary stats, how many people of each gender participated each year
+dataTibble %>% group_by("name", "yearcol")
+
+
+
+
+
+
+
+
+
+
+
   
